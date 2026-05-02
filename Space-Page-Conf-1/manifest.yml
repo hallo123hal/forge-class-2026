@@ -1,0 +1,19 @@
+modules:
+  confluence:spacePage:
+    - key: space-page-conf-1-hello-world-space-page
+      resource: main
+      render: native
+      title: Space-Page-Conf-1
+      route: hello-world
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/c4c1076f-66a3-4985-b0d2-6c5a129a6f83
+permissions:
+  scopes:
+    - read:confluence-content.summary
