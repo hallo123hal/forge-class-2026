@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ForgeReconciler, { Text, Strong, Spinner, useProductContext } from '@forge/react';
-import { requestJira } from '@forge/bridge';
+import { invoke } from '@forge/bridge';
 
 const App = () => {
   const context = useProductContext();
@@ -18,21 +18,8 @@ const App = () => {
           return;
         }
 
-        const res = await requestJira(
-          `/rest/api/3/issue/${issueKey}?fields=summary,status,assignee`
-        );
-
-        if (!res.ok) {
-          throw new Error(`Jira API lỗi: ${res.status}`);
-        }
-
-        const data = await res.json();
-        setIssueData({
-          key: data.key,
-          summary: data.fields?.summary ?? '(Không có tiêu đề)',
-          status: data.fields?.status?.name ?? '(Không có status)',
-          assignee: data.fields?.assignee?.displayName ?? 'Unassigned',
-        });
+        const data = await invoke('getIssueDetails', { issueKey });
+        setIssueData(data);
       } catch (e) {
         setError(e.message || 'Có lỗi xảy ra');
       } finally {

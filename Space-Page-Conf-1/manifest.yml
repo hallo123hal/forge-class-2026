@@ -2,9 +2,14 @@ modules:
   confluence:spacePage:
     - key: space-page-conf-1-hello-world-space-page
       resource: main
+      resolver:
+        function: resolver
       render: native
       title: Space-Page-Conf-1
       route: hello-world
+  function:
+    - key: resolver
+      handler: index.handler
 resources:
   - key: main
     path: src/frontend/index.jsx
@@ -17,3 +22,5 @@ app:
 permissions:
   scopes:
     - read:confluence-content.summary
+    - read:confluence-space.summary
+    - read:space:confluence
