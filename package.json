@@ -1,0 +1,16 @@
+{
+  "name": "ForgeClassWeek1",
+  "private": true,
+  "workspaces": [
+    "Configure-Page-Admin-Page-2",
+    "Create-Jira-Issue-Context-Menu-2",
+    "Issue-Panel-01",
+    "Project-Hub-Sub-Pages-2",
+    "Project-Hub-Sub-Pages-2/static/*",
+    "Risk-Score-Issue-Context-2",
+    "Space-Page-Conf-1"
+  ],
+  "scripts": {
+    "lint": "npm run -ws lint --if-present"
+  }
+}

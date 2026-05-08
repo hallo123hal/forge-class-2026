@@ -1,0 +1,20 @@
+modules:
+  jira:adminPage:
+    - key: configure-page-admin-page-2-hello-world-admin-page
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: Configure-Page-Admin-Page-2
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/9374895d-8425-4a52-973a-1fc443435a7e

@@ -1,0 +1,30 @@
+modules:
+  jira:projectPage:
+    - key: project-hub-sub-pages-2-hello-world-project-page
+      resource: main
+      resolver:
+        function: resolver
+      title: Project Hub
+      pages:
+        - title: Overview
+          route: overview
+        - title: Recent Issues
+          route: recent-issues
+        - title: Team
+          route: team
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: static/hello-world/build
+permissions:
+  scopes:
+    - read:jira-work
+    - read:jira-user
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/17a3f891-5cd0-4270-803e-245268fa9ede

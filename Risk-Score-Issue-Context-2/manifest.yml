@@ -1,0 +1,36 @@
+modules:
+  jira:issueContext:
+    - key: risk-score-issue-context
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: Risk Score Context
+      label: Risk Score
+      status:
+        type: lozenge
+        value:
+          label: Low Risk
+          type: success
+      dynamicProperties:
+        function: risk-dynamic-properties
+
+  function:
+    - key: resolver
+      handler: index.handler
+    - key: risk-dynamic-properties
+      handler: index.getDynamicProperties
+
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+
+permissions:
+  scopes:
+    - read:jira-work
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/8571398f-7211-4d7a-8fba-79c8777ffb40
