@@ -1,17 +1,21 @@
 modules:
   confluence:contextMenu:
-    - key: create-jira-issue-context-menu-2-hello-world-context-menu
+    - key: create-jira-issue-context-menu
+      title: Create Jira Issue
       resource: main
-      render: native
       resolver:
         function: resolver
-      title: Create-Jira-Issue-Context-Menu-2
+      render: native
   function:
     - key: resolver
       handler: index.handler
 resources:
   - key: main
     path: src/frontend/index.jsx
+permissions:
+  scopes:
+    - write:jira-work
+    - read:jira-work
 app:
   runtime:
     name: nodejs24.x
