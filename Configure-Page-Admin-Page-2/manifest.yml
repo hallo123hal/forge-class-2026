@@ -1,0 +1,32 @@
+modules:
+  jira:adminPage:
+    - key: my-admin-main-page
+      resource: admin-main-resource
+      resolver:
+        function: resolver
+      render: native
+      title: My Admin Page
+    - key: my-admin-config-page
+      resource: admin-config-resource
+      resolver:
+        function: resolver
+      render: native
+      title: Configure
+      useAsConfig: true
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: admin-main-resource
+    path: src/frontend/main.jsx
+  - key: admin-config-resource
+    path: src/frontend/configure.jsx
+permissions:
+  scopes:
+    - storage:app
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/9374895d-8425-4a52-973a-1fc443435a7e

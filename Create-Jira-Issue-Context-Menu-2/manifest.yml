@@ -1,0 +1,24 @@
+modules:
+  confluence:contextMenu:
+    - key: create-jira-issue-context-menu
+      title: Create Jira Issue
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+permissions:
+  scopes:
+    - write:jira-work
+    - read:jira-work
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/9b42f283-6f40-4812-99a9-670a4b20f4dd
