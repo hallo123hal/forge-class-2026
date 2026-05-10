@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { invoke, view } from '@forge/bridge';
-import { Navigate, NavLink, Route, Router, Routes } from 'react-router-dom';
+
+const ROUTES = ['/overview', '/recent-issues', '/team'];
 
 const navStyle = {
     display: 'flex',
@@ -10,11 +11,34 @@ const navStyle = {
     paddingBottom: '8px'
 };
 
-const linkStyle = ({ isActive }) => ({
-    color: isActive ? '#0052CC' : '#42526E',
-    textDecoration: 'none',
-    fontWeight: isActive ? 600 : 400
-});
+/**
+ * Forge createHistory() paths are relative to the app URL (e.g. /overview).
+ * Normalize so we always match ROUTES and avoid React Router + custom navigator edge cases.
+ */
+function normalizePathname(raw) {
+    let p = raw || '/';
+    if (!p.startsWith('/')) {
+        p = `/${p}`;
+    }
+    p = p.replace(/\/$/, '') || '/';
+    if (p === '/' || !ROUTES.includes(p)) {
+        return '/overview';
+    }
+    return p;
+}
+
+function linkStyle(isActive) {
+    return {
+        color: isActive ? '#0052CC' : '#42526E',
+        textDecoration: 'none',
+        fontWeight: isActive ? 600 : 400,
+        cursor: 'pointer',
+        background: 'none',
+        border: 'none',
+        padding: 0,
+        font: 'inherit'
+    };
+}
 
 function OverviewPage() {
     const [state, setState] = useState({ loading: true, error: '', data: null });
@@ -96,27 +120,36 @@ function TeamPage() {
     );
 }
 
+function NavButton({ history, target, label, pathname }) {
+    const active = pathname === target;
+    return (
+        <button
+            type="button"
+            style={linkStyle(active)}
+            onClick={() => history.push(target)}
+        >
+            {label}
+        </button>
+    );
+}
+
 function App() {
-    const [historyState, setHistoryState] = useState(null);
+    const [history, setHistory] = useState(null);
+    const [pathname, setPathname] = useState(null);
 
     useEffect(() => {
         let unsubscribe;
 
         const setup = async () => {
-            const history = await view.createHistory();
-            setHistoryState({
-                action: history.action,
-                location: history.location,
-                navigator: history
-            });
+            const h = await view.createHistory();
+            setHistory(h);
 
-            unsubscribe = history.listen((location, action) => {
-                setHistoryState({
-                    action,
-                    location,
-                    navigator: history
-                });
-            });
+            const sync = () => {
+                setPathname(normalizePathname(h.location?.pathname));
+            };
+
+            sync();
+            unsubscribe = h.listen(() => sync());
         };
 
         setup();
@@ -127,33 +160,23 @@ function App() {
         };
     }, []);
 
-    const router = useMemo(() => {
-        if (!historyState) {
-            return null;
-        }
-        return (
-            <Router
-                navigationType={historyState.action}
-                location={historyState.location}
-                navigator={historyState.navigator}
-            >
-                <nav style={navStyle}>
-                    <NavLink to="/overview" style={linkStyle}>Overview</NavLink>
-                    <NavLink to="/recent-issues" style={linkStyle}>Recent Issues</NavLink>
-                    <NavLink to="/team" style={linkStyle}>Team</NavLink>
-                </nav>
+    if (!history || pathname === null) {
+        return <p>Initializing router...</p>;
+    }
 
-                <Routes>
-                    <Route path="/" element={<Navigate to="/overview" replace />} />
-                    <Route path="/overview" element={<OverviewPage />} />
-                    <Route path="/recent-issues" element={<RecentIssuesPage />} />
-                    <Route path="/team" element={<TeamPage />} />
-                </Routes>
-            </Router>
-        );
-    }, [historyState]);
+    return (
+        <>
+            <nav style={navStyle}>
+                <NavButton history={history} target="/overview" label="Overview" pathname={pathname} />
+                <NavButton history={history} target="/recent-issues" label="Recent Issues" pathname={pathname} />
+                <NavButton history={history} target="/team" label="Team" pathname={pathname} />
+            </nav>
 
-    return router || <p>Initializing router...</p>;
+            {pathname === '/overview' ? <OverviewPage /> : null}
+            {pathname === '/recent-issues' ? <RecentIssuesPage /> : null}
+            {pathname === '/team' ? <TeamPage /> : null}
+        </>
+    );
 }
 
 export default App;

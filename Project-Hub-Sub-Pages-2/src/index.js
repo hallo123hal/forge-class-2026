@@ -3,11 +3,14 @@ import api, { route } from '@forge/api';
 
 const resolver = new Resolver();
 
-const fetchJson = async (path) => {
+const postJson = async (path, body) => {
     const response = await api.asUser().requestJira(path, {
+        method: 'POST',
         headers: {
-            Accept: 'application/json'
-        }
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
     });
 
     if (!response.ok) {
@@ -16,6 +19,15 @@ const fetchJson = async (path) => {
     }
 
     return response.json();
+};
+
+/** Enhanced JQL search (replaces removed GET /rest/api/3/search?jql=...) */
+const searchJql = (payload) => postJson(route`/rest/api/3/search/jql`, payload);
+
+/** Bounded JQL count for overview totals */
+const approximateCount = async (jql) => {
+    const data = await postJson(route`/rest/api/3/search/approximate-count`, { jql });
+    return typeof data?.count === 'number' ? data.count : 0;
 };
 
 resolver.define('getOverview', async (req) => {
@@ -27,12 +39,13 @@ resolver.define('getOverview', async (req) => {
         throw new Error('Missing project key in context.');
     }
 
-    const search = await fetchJson(route`/rest/api/3/search?jql=${`project = ${projectKey}`}&maxResults=0&fields=none`);
+    const jql = `project = ${projectKey}`;
+    const issueCount = await approximateCount(jql);
 
     return {
         projectKey,
         projectType: projectType || 'Unknown',
-        issueCount: search?.total || 0
+        issueCount
     };
 });
 
@@ -42,9 +55,11 @@ resolver.define('getRecentIssues', async (req) => {
         throw new Error('Missing project key in context.');
     }
 
-    const search = await fetchJson(
-        route`/rest/api/3/search?jql=${`project = ${projectKey} ORDER BY created DESC`}&maxResults=5&fields=key,summary,status,assignee,created`
-    );
+    const search = await searchJql({
+        jql: `project = ${projectKey} ORDER BY created DESC`,
+        maxResults: 5,
+        fields: ['key', 'summary', 'status', 'assignee', 'created']
+    });
 
     return (search?.issues || []).map((issue) => ({
         key: issue.key,
@@ -61,9 +76,11 @@ resolver.define('getTeam', async (req) => {
         throw new Error('Missing project key in context.');
     }
 
-    const search = await fetchJson(
-        route`/rest/api/3/search?jql=${`project = ${projectKey} AND assignee IS NOT EMPTY AND updated >= -7d ORDER BY updated DESC`}&maxResults=100&fields=assignee`
-    );
+    const search = await searchJql({
+        jql: `project = ${projectKey} AND assignee IS NOT EMPTY AND updated >= -7d ORDER BY updated DESC`,
+        maxResults: 100,
+        fields: ['assignee']
+    });
 
     const unique = new Map();
     (search?.issues || []).forEach((issue) => {
