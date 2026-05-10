@@ -1,17 +1,29 @@
 modules:
   jira:adminPage:
-    - key: configure-page-admin-page-2-hello-world-admin-page
-      resource: main
+    - key: my-admin-main-page
+      resource: admin-main-resource
       resolver:
         function: resolver
       render: native
-      title: Configure-Page-Admin-Page-2
+      title: My Admin Page
+    - key: my-admin-config-page
+      resource: admin-config-resource
+      resolver:
+        function: resolver
+      render: native
+      title: Configure
+      useAsConfig: true
   function:
     - key: resolver
       handler: index.handler
 resources:
-  - key: main
-    path: src/frontend/index.jsx
+  - key: admin-main-resource
+    path: src/frontend/main.jsx
+  - key: admin-config-resource
+    path: src/frontend/configure.jsx
+permissions:
+  scopes:
+    - storage:app
 app:
   runtime:
     name: nodejs24.x
