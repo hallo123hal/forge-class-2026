@@ -1,0 +1,21 @@
+modules:
+  jira:issuePanel:
+    - key: debug-panel
+      resource: debug-ui
+      resolver:
+        function: resolver
+      render: native
+      title: Debug Table Product Context
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: debug-ui
+    path: src/frontend/index.jsx
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/534ffb04-84fb-4f5d-aadb-034c192bd147
