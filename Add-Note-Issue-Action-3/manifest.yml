@@ -1,0 +1,23 @@
+modules:
+  jira:issueAction:
+    - key: add-quick-note-issue-action
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: Add Quick Note
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+permissions:
+  scopes:
+    - storage:app
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/4230ee3f-3dee-4375-9fb8-65ae885fd1b3

@@ -2,6 +2,7 @@
   "name": "ForgeClassWeek1",
   "private": true,
   "workspaces": [
+    "Add-Note-Issue-Action-3",
     "Configure-Page-Admin-Page-2",
     "Create-Jira-Issue-Context-Menu-2",
     "Debug-Table-Product-Context-3",
