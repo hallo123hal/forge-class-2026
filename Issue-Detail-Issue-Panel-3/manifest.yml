@@ -1,0 +1,25 @@
+modules:
+  jira:issuePanel:
+    - key: issue-detail-issue-panel-3-hello-world-issue-panel
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: Issue-Detail-Issue-Panel-3
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/d36a0006-d9df-40a3-8c9c-2ce207b15fe9
+
+permissions:
+  scopes:
+    - read:jira-work
