@@ -1,0 +1,24 @@
+modules:
+  jira:projectPage:
+    - key: project-health-dashboard-project-page-3-hello-world-project-page
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: Project-Health-Dashboard-Project-Page-3
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/58980dc0-2247-4276-a95c-3f6a01c52969
+
+permissions:
+  scopes:
+    - read:jira-work
