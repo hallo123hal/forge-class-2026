@@ -1,0 +1,53 @@
+.panel {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 12px;
+  color: #172b4d;
+}
+
+.panel h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.panel h2 + .forge-table {
+  margin-top: 0;
+}
+
+.panel--error {
+  color: #ae2a19;
+}
+
+.forge-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+.forge-table th,
+.forge-table td {
+  border: 1px solid #dfe1e6;
+  padding: 8px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.forge-table thead th {
+  background: #f4f5f7;
+  font-weight: 600;
+}
+
+.forge-table tbody tr:nth-child(even) {
+  background: #fafbfc;
+}
+
+.forge-table tbody tr:nth-child(odd) {
+  background: #ffffff;
+}
+
+.forge-table td:first-child {
+  width: 35%;
+  font-weight: 500;
+  color: #42526e;
+}
