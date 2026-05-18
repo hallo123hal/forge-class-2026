@@ -13,9 +13,14 @@ modules:
 resources:
   - key: main
     path: static/hello-world/build
+    tunnel:
+      port: 5173
 permissions:
   scopes:
     - read:jira-work
+  content:
+    styles:
+      - 'unsafe-inline'
 app:
   runtime:
     name: nodejs24.x

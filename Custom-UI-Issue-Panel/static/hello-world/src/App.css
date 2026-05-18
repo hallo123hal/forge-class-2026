@@ -34,7 +34,8 @@
 }
 
 .forge-table thead th {
-  background: #f4f5f7;
+  background: #e4e3e3;
+  padding: 8px 12px;
   font-weight: 600;
 }
 
@@ -48,6 +49,7 @@
 
 .forge-table td:first-child {
   width: 35%;
+  padding: 8px 12px;
   font-weight: 500;
   color: #42526e;
 }
