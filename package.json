@@ -4,6 +4,7 @@
   "workspaces": [
     "Burn-Dashboard-Prj-Page-4",
     "Burn-Dashboard-Prj-Page-4/static/*",
+    "Burn-Dashboard-UI-Kit-4",
     "Add-Note-Issue-Action-3",
     "Custom-UI-Issue-Panel",
     "Custom-UI-Issue-Panel/static/*",

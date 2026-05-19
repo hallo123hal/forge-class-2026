@@ -1,0 +1,30 @@
+modules:
+  jira:projectPage:
+    - key: burn-dashboard-ui-kit-4-hello-world-project-page
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: Burn Dashboard (UI Kit)
+      pages:
+        - title: Overview
+          route: overview
+        - title: Burndown Chart
+          route: burndown
+        - title: Issues
+          route: issues
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+permissions:
+  scopes:
+    - read:jira-work
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/dd3b1ff1-d803-49a1-b0a3-76050b59ffd7
