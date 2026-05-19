@@ -18,6 +18,9 @@ modules:
 resources:
   - key: main
     path: static/hello-world/build
+permissions:
+  scopes:
+    - read:jira-work
 app:
   runtime:
     name: nodejs24.x

@@ -1,5 +1,4 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
 
 const links = [
     { to: '/overview', label: 'Overview' },
@@ -7,22 +6,24 @@ const links = [
     { to: '/issues', label: 'Issues' },
 ];
 
-function Sidebar() {
+function Sidebar({ history, pathname }) {
     return (
         <aside className="sidebar">
             <h1 className="sidebar-title">Burn Dashboard</h1>
             <nav className="sidebar-nav">
-                {links.map(({ to, label }) => (
-                    <NavLink
-                        key={to}
-                        to={to}
-                        className="sidebar-link"
-                        activeClassName="sidebar-link--active"
-                        exact
-                    >
-                        {label}
-                    </NavLink>
-                ))}
+                {links.map(({ to, label }) => {
+                    const isActive = pathname === to;
+                    return (
+                        <button
+                            key={to}
+                            type="button"
+                            className={isActive ? 'sidebar-link sidebar-link--active' : 'sidebar-link'}
+                            onClick={() => history.push(to)}
+                        >
+                            {label}
+                        </button>
+                    );
+                })}
             </nav>
         </aside>
     );

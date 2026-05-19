@@ -29,11 +29,18 @@
 
 .sidebar-link {
     display: block;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
     padding: 10px 16px;
     color: #deebff;
     text-decoration: none;
     font-size: 14px;
+    border: none;
     border-left: 3px solid transparent;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
 }
 
 .sidebar-link:hover {
@@ -131,4 +138,8 @@
 .app-loading {
     padding: 24px;
     color: #5e6c84;
+}
+
+.page--error p {
+    color: #de350b;
 }

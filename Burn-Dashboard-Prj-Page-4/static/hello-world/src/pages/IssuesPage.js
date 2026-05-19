@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { mockIssues } from '../data/mockData';
+import React, { useEffect, useMemo, useState } from 'react';
+import { invoke } from '@forge/bridge';
 
 function compareKeys(a, b, direction) {
     const result = a.key.localeCompare(b.key, undefined, { numeric: true });
@@ -8,43 +8,62 @@ function compareKeys(a, b, direction) {
 
 function IssuesPage() {
     const [sortDir, setSortDir] = useState('asc');
+    const [state, setState] = useState({ loading: true, error: '', issues: [] });
+
+    useEffect(() => {
+        invoke('getIssues')
+            .then((issues) => setState({ loading: false, error: '', issues }))
+            .catch((e) => setState({
+                loading: false,
+                error: e.message || 'Failed to load issues',
+                issues: [],
+            }));
+    }, []);
 
     const sorted = useMemo(
-        () => [...mockIssues].sort((a, b) => compareKeys(a, b, sortDir)),
-        [sortDir]
+        () => [...state.issues].sort((a, b) => compareKeys(a, b, sortDir)),
+        [state.issues, sortDir]
     );
 
-    const toggleSort = () => {
-        setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
-    };
+    if (state.loading) {
+        return <section className="page"><p>Loading issues…</p></section>;
+    }
+
+    if (state.error) {
+        return <section className="page page--error"><p>{state.error}</p></section>;
+    }
 
     return (
         <section className="page">
             <h2>Issues</h2>
-            <table className="issues-table">
-                <thead>
-                    <tr>
-                        <th>
-                            <button type="button" className="sort-btn" onClick={toggleSort}>
-                                Key {sortDir === 'asc' ? '▲' : '▼'}
-                            </button>
-                        </th>
-                        <th>Summary</th>
-                        <th>Status</th>
-                        <th>Assignee</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {sorted.map((issue) => (
-                        <tr key={issue.key}>
-                            <td>{issue.key}</td>
-                            <td>{issue.summary}</td>
-                            <td>{issue.status}</td>
-                            <td>{issue.assignee}</td>
+            {sorted.length === 0 ? (
+                <p>No issues found.</p>
+            ) : (
+                <table className="issues-table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <button type="button" className="sort-btn" onClick={() => setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))}>
+                                    Key {sortDir === 'asc' ? '▲' : '▼'}
+                                </button>
+                            </th>
+                            <th>Summary</th>
+                            <th>Status</th>
+                            <th>Assignee</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {sorted.map((issue) => (
+                            <tr key={issue.key}>
+                                <td>{issue.key}</td>
+                                <td>{issue.summary}</td>
+                                <td>{issue.status}</td>
+                                <td>{issue.assignee}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
         </section>
     );
 }
