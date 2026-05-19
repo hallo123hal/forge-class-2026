@@ -1,0 +1,18 @@
+{
+  "name": "burn-dashboard-prj-page-4",
+  "version": "1.1.18",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build:ui": "npm run build --workspace=burn-dashboard-prj-page-4-static"
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "eslint-plugin-react-hooks": "^4.6.0"
+  },
+  "dependencies": {
+    "@forge/api": "7.2.0",
+    "@forge/resolver": "1.8.0"
+  }
+}
