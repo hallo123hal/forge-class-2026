@@ -1,0 +1,26 @@
+modules:
+  jira:projectPage:
+    - key: burn-dashboard-prj-page-4-hello-world-project-page
+      resource: main
+      resolver:
+        function: resolver
+      title: Burn Dashboard
+      pages:
+        - title: Overview
+          route: overview
+        - title: Burndown Chart
+          route: burndown
+        - title: Issues
+          route: issues
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: static/hello-world/build
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/bf79015d-f1f1-4dc3-8c82-f5cfc8b0755c
