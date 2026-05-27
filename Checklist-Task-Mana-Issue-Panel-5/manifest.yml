@@ -1,0 +1,57 @@
+modules:
+  jira:issuePanel:
+    - key: checklist-task-mana-issue-panel-5-checklist
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: Checklist
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
+  jira:issueContext:
+    - key: checklist-task-mana-issue-panel-5-context
+      resource: context
+      resolver:
+        function: resolver
+      render: native
+      title: Checklist
+      label: Checklist
+      dynamicProperties:
+        function: checklist-dyn-props
+  function:
+    - key: resolver
+      handler: index.handler
+    - key: checklist-dyn-props
+      handler: index.getDynamicProperties
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+  - key: context
+    path: src/frontend/context.jsx
+permissions:
+  scopes:
+    - storage:app
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/63e05917-2ccb-4283-a9d4-fa0280b146e7
+  storage:
+    entities:
+      - name: checklist-item
+        attributes:
+          title:
+            type: string
+          isDone:
+            type: boolean
+          priority:
+            type: integer
+          issueKey:
+            type: string
+        indexes:
+          - isDone
+          - name: by-issue-status
+            partition:
+              - issueKey
+            range:
+              - priority
