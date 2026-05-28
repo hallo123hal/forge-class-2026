@@ -1,0 +1,29 @@
+modules:
+  jira:projectPage:
+    - key: sprint-task-tracker-prj-page-5-hello-world-project-page
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: Sprint Task Tracker
+  sql:
+    - key: main
+      engine: mysql
+  scheduledTrigger:
+    - key: sprint-tasks-migration-trigger
+      function: runMigration
+      interval: hour
+  function:
+    - key: resolver
+      handler: index.handler
+    - key: runMigration
+      handler: index.runMigration
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/b3d7daaa-856c-4b21-9cae-39481197f5f1
