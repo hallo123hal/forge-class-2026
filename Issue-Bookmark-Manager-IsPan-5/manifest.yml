@@ -1,0 +1,25 @@
+modules:
+  jira:issuePanel:
+    - key: issue-bookmark-manager-ispan-5-hello-world-issue-panel
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: Bookmarks
+      icon: https://developer.atlassian.com/platform/forge/images/icons/issue-panel-icon.svg
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/97a1f883-6a1c-49d8-b927-257280f93daf
+permissions:
+  scopes:
+    - read:jira-work
+    - storage:app
