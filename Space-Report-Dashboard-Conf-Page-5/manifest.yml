@@ -1,0 +1,29 @@
+modules:
+  confluence:spacePage:
+    - key: space-report-dashboard-conf-page-5-hello-world-space-page
+      resource: main
+      resolver:
+        function: resolver
+      render: native
+      title: Space Health Report
+      route: hello-world
+  function:
+    - key: resolver
+      handler: index.handler
+resources:
+  - key: main
+    path: src/frontend/index.jsx
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/1164d32a-d93f-4729-abc6-1bf2725dab41
+permissions:
+  scopes:
+    - search:confluence
+    - read:page:confluence
+    - read:space:confluence
+    - read:label:confluence
+    - read:confluence-content.summary
+    - write:label:confluence
