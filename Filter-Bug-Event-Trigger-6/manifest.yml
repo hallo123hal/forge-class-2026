@@ -1,0 +1,23 @@
+modules:
+  trigger:
+    - key: filter-bug-event-trigger-6-issue-updated-trigger
+      function: onBugPriorityHighest
+      events:
+        - avi:jira:updated:issue
+      filter:
+        ignoreSelf: true
+        expression: event.issue.fields.issuetype.name == "Bug" && event.issue.fields.priority.name == "Highest"
+        onError: RECEIVE_AND_LOG
+  function:
+    - key: onBugPriorityHighest
+      handler: index.onBugPriorityHighest
+permissions:
+  scopes:
+    - read:jira-work
+    - write:jira-work
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/5e1c7421-6064-4237-a417-40d39f26772d
