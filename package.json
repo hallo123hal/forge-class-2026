@@ -24,7 +24,8 @@
     "Project-Hub-Sub-Pages-2/static/*",
     "Risk-Score-Issue-Context-2",
     "Space-Page-Conf-1",
-    "Space-Report-Dashboard-Conf-Page-5"
+    "Space-Report-Dashboard-Conf-Page-5",
+    "Auto-Comment-New-Issue-6"
   ],
   "scripts": {
     "lint": "npm run -ws lint --if-present"

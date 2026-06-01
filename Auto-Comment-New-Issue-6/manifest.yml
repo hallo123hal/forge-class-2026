@@ -1,0 +1,23 @@
+modules:
+  trigger:
+    - key: auto-comment-new-issue-6-issue-created-trigger
+      function: onIssueCreated
+      events:
+        - avi:jira:created:issue
+      filter:
+        ignoreSelf: true
+        expression: event.issue.fields?.project?.key == 'FORGECLASS'
+        onError: RECEIVE_AND_LOG
+  function:
+    - key: onIssueCreated
+      handler: index.onIssueCreated
+permissions:
+  scopes:
+    - read:jira-work
+    - write:jira-work
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/544010c3-c7a8-4728-b2ed-49b4812da40a
