@@ -1,0 +1,24 @@
+modules:
+  trigger:
+    - key: idempotency-pattern-trigger-6-issue-created-trigger
+      function: onIssueCreated
+      events:
+        - avi:jira:created:issue
+      filter:
+        ignoreSelf: true
+        expression: event.issue.fields?.project?.key == 'FORGECLASS'
+        onError: RECEIVE_AND_LOG
+  function:
+    - key: onIssueCreated
+      handler: index.onIssueCreated
+permissions:
+  scopes:
+    - read:jira-work
+    - write:jira-work
+    - storage:app
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/21ab91f5-3812-4fc0-80d5-b5ae1514c17f

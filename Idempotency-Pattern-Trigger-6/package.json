@@ -1,0 +1,11 @@
+{
+  "name": "idempotency-pattern-trigger-6",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@forge/api": "^7.1.4",
+    "@forge/kvs": "^1.6.2"
+  }
+}
