@@ -1,0 +1,22 @@
+modules:
+  webtrigger:
+    - key: github-webhook
+      function: handleWebhook
+      response:
+        type: dynamic
+
+  function:
+    - key: handleWebhook
+      handler: index.handleWebhook
+
+permissions:
+  scopes:
+    - read:jira-work
+    - write:jira-work
+
+app:
+  runtime:
+    name: nodejs24.x
+    memoryMB: 256
+    architecture: arm64
+  id: ari:cloud:ecosystem::app/7f902bcb-9319-4341-aae1-099d0633b0e9

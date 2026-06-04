@@ -27,7 +27,8 @@
     "Space-Report-Dashboard-Conf-Page-5",
     "Auto-Comment-New-Issue-6",
     "Filter-Bug-Event-Trigger-6",
-    "Weekly-Stale-Report-Trigger-6"
+    "Weekly-Stale-Report-Trigger-6",
+    "Github-Webhook-Trigger"
   ],
   "scripts": {
     "lint": "npm run -ws lint --if-present"
