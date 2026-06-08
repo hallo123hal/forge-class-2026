@@ -1,6 +1,13 @@
 import Resolver from '@forge/resolver';
 import api, { route } from '@forge/api';
 import { kvs, WhereConditions } from '@forge/kvs';
+import {
+  assertBookmarkOwnership,
+  assertOwnAccount,
+  assertOwnBookmarkKey,
+  validateCursor,
+  validateIssueKey,
+} from './validation';
 
 const resolver = new Resolver();
 
@@ -48,6 +55,14 @@ const getIssueSnapshot = async (issueKey) => {
   };
 };
 
+const mapBookmarkRow = (row, prefix) => ({
+  key: row.key,
+  issueKey: row.value?.issueKey ?? row.key.replace(prefix, ''),
+  summary: row.value?.summary ?? '(Không có summary)',
+  status: row.value?.status ?? '(Không có status)',
+  savedAt: row.value?.savedAt ?? null,
+});
+
 resolver.define('getIssueBookmarkState', async (req) => {
   const functionName = 'getIssueBookmarkState';
   const startedAt = Date.now();
@@ -93,22 +108,22 @@ resolver.define('toggleBookmark', async (req) => {
   const functionName = 'toggleBookmark';
   const startedAt = Date.now();
   const issueKey = getIssueKey(req);
-  const accountId = getAccountId(req);
 
-  logEvent('INFO', 'resolver_called', { functionName, issueKey, accountId });
+  logEvent('INFO', 'resolver_called', {
+    functionName,
+    issueKey,
+    accountId: getAccountId(req),
+  });
 
   try {
-    if (!issueKey) {
-      throw new Error('Không xác định được issue key.');
-    }
-    if (!accountId) {
-      throw new Error('Không xác định được accountId.');
-    }
+    const accountId = assertOwnAccount(req, getAccountId);
+    validateIssueKey(issueKey);
 
     const key = buildBookmarkKey(accountId, issueKey);
     const existing = await kvs.get(key);
 
     if (existing) {
+      assertBookmarkOwnership(existing, accountId);
       await kvs.delete(key);
       const result = {
         action: 'removed',
@@ -151,7 +166,7 @@ resolver.define('toggleBookmark', async (req) => {
     logEvent('ERROR', 'resolver_failed', {
       functionName,
       issueKey,
-      accountId,
+      accountId: getAccountId(req),
       durationMs: Date.now() - startedAt,
       errorMessage: error.message,
     });
@@ -159,59 +174,54 @@ resolver.define('toggleBookmark', async (req) => {
   }
 });
 
-resolver.define('listMyBookmarks', async (req) => {
-  const functionName = 'listMyBookmarks';
+resolver.define('getMyBookmarks', async (req) => {
+  const functionName = 'getMyBookmarks';
   const startedAt = Date.now();
-  const accountId = getAccountId(req);
+  const cursor = req.payload?.cursor;
 
-  logEvent('INFO', 'resolver_called', { functionName, accountId });
+  logEvent('INFO', 'resolver_called', {
+    functionName,
+    accountId: getAccountId(req),
+    cursor: cursor ?? null,
+  });
 
   try {
+    const accountId = getAccountId(req);
     if (!accountId) {
       throw new Error('Không xác định được accountId.');
     }
 
+    validateCursor(cursor);
+
     const prefix = buildBookmarkPrefix(accountId);
-    const bookmarks = [];
-    let cursor;
+    let query = kvs
+      .query()
+      .where('key', WhereConditions.beginsWith(prefix))
+      .limit(50);
 
-    do {
-      let query = kvs
-        .query()
-        .where('key', WhereConditions.beginsWith(prefix))
-        .limit(50);
+    if (cursor) {
+      query = query.cursor(cursor);
+    }
 
-      if (cursor) {
-        query = query.cursor(cursor);
-      }
+    const page = await query.getMany();
+    const bookmarks = page.results.map((row) => mapBookmarkRow(row, prefix));
 
-      const page = await query.getMany();
-      for (const row of page.results) {
-        bookmarks.push({
-          key: row.key,
-          issueKey: row.value?.issueKey ?? row.key.replace(prefix, ''),
-          summary: row.value?.summary ?? '(Không có summary)',
-          status: row.value?.status ?? '(Không có status)',
-          savedAt: row.value?.savedAt ?? null,
-        });
-      }
-      cursor = page.nextCursor;
-    } while (cursor);
-
-    bookmarks.sort((a, b) => Date.parse(b.savedAt ?? 0) - Date.parse(a.savedAt ?? 0));
-
-    const result = { bookmarks };
+    const result = {
+      bookmarks,
+      nextCursor: page.nextCursor ?? null,
+    };
     logEvent('INFO', 'resolver_succeeded', {
       functionName,
       accountId,
       count: bookmarks.length,
+      hasNextCursor: Boolean(result.nextCursor),
       durationMs: Date.now() - startedAt,
     });
     return result;
   } catch (error) {
     logEvent('ERROR', 'resolver_failed', {
       functionName,
-      accountId,
+      accountId: getAccountId(req),
       durationMs: Date.now() - startedAt,
       errorMessage: error.message,
     });
@@ -223,19 +233,22 @@ resolver.define('removeBookmark', async (req) => {
   const functionName = 'removeBookmark';
   const startedAt = Date.now();
   const issueKey = req.payload?.issueKey;
-  const accountId = getAccountId(req);
 
-  logEvent('INFO', 'resolver_called', { functionName, issueKey, accountId });
+  logEvent('INFO', 'resolver_called', {
+    functionName,
+    issueKey,
+    accountId: getAccountId(req),
+  });
 
   try {
-    if (!issueKey || typeof issueKey !== 'string') {
-      throw new Error('Issue key không hợp lệ.');
-    }
-    if (!accountId) {
-      throw new Error('Không xác định được accountId.');
-    }
+    const accountId = assertOwnAccount(req, getAccountId);
+    validateIssueKey(issueKey);
+    assertOwnBookmarkKey(req.payload?.key, accountId, buildBookmarkPrefix);
 
     const key = buildBookmarkKey(accountId, issueKey);
+    const existing = await kvs.get(key);
+    assertBookmarkOwnership(existing, accountId);
+
     await kvs.delete(key);
 
     const result = {
@@ -253,7 +266,7 @@ resolver.define('removeBookmark', async (req) => {
     logEvent('ERROR', 'resolver_failed', {
       functionName,
       issueKey,
-      accountId,
+      accountId: getAccountId(req),
       durationMs: Date.now() - startedAt,
       errorMessage: error.message,
     });

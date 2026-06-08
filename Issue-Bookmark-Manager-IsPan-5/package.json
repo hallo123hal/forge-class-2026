@@ -5,7 +5,8 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "lint": "eslint src/**/*"
+    "lint": "eslint src/**/*",
+    "test": "node src/resolvers/validation.test.mjs"
   },
   "devDependencies": {
     "eslint": "^8.56.0",

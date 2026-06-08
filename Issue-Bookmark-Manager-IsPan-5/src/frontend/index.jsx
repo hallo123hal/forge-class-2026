@@ -52,8 +52,22 @@ const App = () => {
     setListLoading(true);
     setError(null);
     try {
-      const result = await invoke('listMyBookmarks');
-      setBookmarks(result?.bookmarks ?? []);
+      const allBookmarks = [];
+      let cursor;
+
+      do {
+        const result = await invoke(
+          'getMyBookmarks',
+          cursor ? { cursor } : {}
+        );
+        allBookmarks.push(...(result?.bookmarks ?? []));
+        cursor = result?.nextCursor ?? undefined;
+      } while (cursor);
+
+      allBookmarks.sort(
+        (a, b) => Date.parse(b.savedAt ?? 0) - Date.parse(a.savedAt ?? 0)
+      );
+      setBookmarks(allBookmarks);
     } catch (e) {
       setError(e?.message || 'Không tải được danh sách bookmarks.');
       setBookmarks([]);
