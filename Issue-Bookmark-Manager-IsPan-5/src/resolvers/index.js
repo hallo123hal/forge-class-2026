@@ -8,6 +8,7 @@ import {
   validateCursor,
   validateIssueKey,
 } from './validation';
+import { logRequestReceived } from './requestLog';
 
 const resolver = new Resolver();
 
@@ -69,7 +70,7 @@ resolver.define('getIssueBookmarkState', async (req) => {
   const issueKey = getIssueKey(req);
   const accountId = getAccountId(req);
 
-  logEvent('INFO', 'resolver_called', { functionName, issueKey, accountId });
+  logRequestReceived(req, functionName);
 
   try {
     if (!issueKey) {
@@ -109,11 +110,7 @@ resolver.define('toggleBookmark', async (req) => {
   const startedAt = Date.now();
   const issueKey = getIssueKey(req);
 
-  logEvent('INFO', 'resolver_called', {
-    functionName,
-    issueKey,
-    accountId: getAccountId(req),
-  });
+  logRequestReceived(req, functionName);
 
   try {
     const accountId = assertOwnAccount(req, getAccountId);
@@ -179,11 +176,7 @@ resolver.define('getMyBookmarks', async (req) => {
   const startedAt = Date.now();
   const cursor = req.payload?.cursor;
 
-  logEvent('INFO', 'resolver_called', {
-    functionName,
-    accountId: getAccountId(req),
-    cursor: cursor ?? null,
-  });
+  logRequestReceived(req, functionName);
 
   try {
     const accountId = getAccountId(req);
@@ -234,11 +227,7 @@ resolver.define('removeBookmark', async (req) => {
   const startedAt = Date.now();
   const issueKey = req.payload?.issueKey;
 
-  logEvent('INFO', 'resolver_called', {
-    functionName,
-    issueKey,
-    accountId: getAccountId(req),
-  });
+  logRequestReceived(req, functionName);
 
   try {
     const accountId = assertOwnAccount(req, getAccountId);
