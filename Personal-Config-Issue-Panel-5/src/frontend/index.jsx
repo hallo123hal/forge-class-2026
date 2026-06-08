@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useId, useState } from 'react';
 import ForgeReconciler, {
-  Box,
   Button,
   ButtonGroup,
   Checkbox,
@@ -10,25 +9,31 @@ import ForgeReconciler, {
   FormSection,
   Label,
   LoadingButton,
+  Lozenge,
   SectionMessage,
   Select,
   Spinner,
   Stack,
   Text,
-  Textfield,
 } from '@forge/react';
 import { invoke } from '@forge/bridge';
 
-const LANGUAGE_OPTIONS = [
+const THEME_OPTIONS = [
+  { label: 'Sáng', value: 'light' },
+  { label: 'Tối', value: 'dark' },
+];
+
+const LOCALE_OPTIONS = [
   { label: 'Tiếng Việt', value: 'vi' },
   { label: 'English', value: 'en' },
   { label: '日本語', value: 'ja' },
 ];
 
 const DEFAULT_FORM = {
-  preferredLanguage: 'vi',
+  theme: 'light',
   showAvatar: true,
-  itemsPerPage: '25',
+  locale: 'vi',
+  notifications: true,
 };
 
 const formatSavedAt = (iso) => {
@@ -41,78 +46,95 @@ const formatSavedAt = (iso) => {
   });
 };
 
-const parseTextfieldValue = (value) => {
-  if (typeof value === 'string') return value;
-  if (value?.target?.value !== undefined) return String(value.target.value);
-  return String(value ?? '');
-};
-
 const App = () => {
   const formId = useId();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const [error, setError] = useState(null);
   const [savedAt, setSavedAt] = useState(null);
   const [saveMessage, setSaveMessage] = useState(null);
+  const [schemaVersion, setSchemaVersion] = useState(null);
+  const [migratedFromV1, setMigratedFromV1] = useState(false);
 
-  const [preferredLanguage, setPreferredLanguage] = useState(
-    DEFAULT_FORM.preferredLanguage
-  );
+  const [theme, setTheme] = useState(DEFAULT_FORM.theme);
   const [showAvatar, setShowAvatar] = useState(DEFAULT_FORM.showAvatar);
-  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_FORM.itemsPerPage);
+  const [locale, setLocale] = useState(DEFAULT_FORM.locale);
+  const [notifications, setNotifications] = useState(DEFAULT_FORM.notifications);
 
-  const applySettingsToForm = useCallback((settings) => {
-    setPreferredLanguage(
-      settings?.preferredLanguage ?? DEFAULT_FORM.preferredLanguage
-    );
+  const applyPrefsToForm = useCallback((prefs) => {
+    setTheme(prefs?.theme ?? DEFAULT_FORM.theme);
     setShowAvatar(
-      typeof settings?.showAvatar === 'boolean'
-        ? settings.showAvatar
+      typeof prefs?.showAvatar === 'boolean'
+        ? prefs.showAvatar
         : DEFAULT_FORM.showAvatar
     );
-    setItemsPerPage(
-      settings?.itemsPerPage != null
-        ? String(settings.itemsPerPage)
-        : DEFAULT_FORM.itemsPerPage
+    setLocale(prefs?.locale ?? DEFAULT_FORM.locale);
+    setNotifications(
+      typeof prefs?.notifications === 'boolean'
+        ? prefs.notifications
+        : DEFAULT_FORM.notifications
     );
+    setSchemaVersion(prefs?.version ?? null);
   }, []);
 
-  const loadSettings = useCallback(async () => {
+  const loadPrefs = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await invoke('getUserSettings');
-      applySettingsToForm(result?.settings);
+      const result = await invoke('getUserPrefs');
+      applyPrefsToForm(result?.prefs);
       setSavedAt(result?.savedAt ?? null);
+      setMigratedFromV1(Boolean(result?.migratedFromV1));
     } catch (e) {
       setError(e?.message || 'Không tải được cài đặt.');
     } finally {
       setLoading(false);
     }
-  }, [applySettingsToForm]);
+  }, [applyPrefsToForm]);
 
   useEffect(() => {
-    loadSettings();
-  }, [loadSettings]);
+    loadPrefs();
+  }, [loadPrefs]);
 
   const handleSave = async () => {
     setSaving(true);
     setError(null);
     setSaveMessage(null);
     try {
-      const result = await invoke('saveUserSettings', {
-        preferredLanguage,
+      const result = await invoke('saveUserPrefs', {
+        theme,
         showAvatar,
-        itemsPerPage: Number(itemsPerPage),
+        locale,
+        notifications,
       });
       const at = result?.savedAt ?? new Date().toISOString();
       setSavedAt(at);
-      setSaveMessage(`Đã lưu lúc ${formatSavedAt(at)}`);
+      setSchemaVersion(result?.version ?? 2);
+      setMigratedFromV1(false);
+      setSaveMessage(`Đã lưu v2 lúc ${formatSavedAt(at)}`);
     } catch (e) {
       setError(e?.message || 'Lưu cài đặt thất bại.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSeedV1 = async () => {
+    setSeeding(true);
+    setError(null);
+    setSaveMessage(null);
+    try {
+      await invoke('seedV1UserPrefs', { theme: 'dark', showAvatar: true });
+      await loadPrefs();
+      setSaveMessage(
+        'Đã seed v1: { theme: "dark", showAvatar: true } — reload để xem migration.'
+      );
+    } catch (e) {
+      setError(e?.message || 'Seed v1 thất bại.');
+    } finally {
+      setSeeding(false);
     }
   };
 
@@ -121,10 +143,12 @@ const App = () => {
     setError(null);
     setSaveMessage(null);
     try {
-      await invoke('deleteUserSettings');
-      applySettingsToForm(DEFAULT_FORM);
+      await invoke('deleteUserPrefs');
+      applyPrefsToForm(DEFAULT_FORM);
       setSavedAt(null);
-      setSaveMessage('Đã reset về mặc định.');
+      setSchemaVersion(null);
+      setMigratedFromV1(false);
+      setSaveMessage('Đã xóa storage và reset về mặc định.');
     } catch (e) {
       setError(e?.message || 'Reset thất bại.');
     } finally {
@@ -136,12 +160,15 @@ const App = () => {
     return <Spinner label="Đang tải cài đặt…" />;
   }
 
-  const languageFieldId = `${formId}-language`;
+  const themeFieldId = `${formId}-theme`;
   const avatarFieldId = `${formId}-avatar`;
-  const itemsFieldId = `${formId}-items`;
+  const localeFieldId = `${formId}-locale`;
+  const notificationsFieldId = `${formId}-notifications`;
 
-  const selectedLanguage =
-    LANGUAGE_OPTIONS.find((o) => o.value === preferredLanguage) ?? null;
+  const selectedTheme =
+    THEME_OPTIONS.find((o) => o.value === theme) ?? null;
+  const selectedLocale =
+    LOCALE_OPTIONS.find((o) => o.value === locale) ?? null;
 
   const savedAtLabel =
     saveMessage ||
@@ -155,35 +182,53 @@ const App = () => {
         </SectionMessage>
       ) : null}
 
+      {migratedFromV1 ? (
+        <SectionMessage appearance="warning" title="Migration v1 → v2">
+          <Text>
+            Đọc được dữ liệu v1 cũ. Đã bổ sung locale=&quot;vi&quot;,
+            notifications=true, version=2. Lưu để ghi v2 vào storage.
+          </Text>
+        </SectionMessage>
+      ) : null}
+
       {savedAtLabel ? (
         <SectionMessage appearance="success" title="Trạng thái lưu">
-          <Text>{savedAtLabel}</Text>
+          <Text>
+            {savedAtLabel}
+            {schemaVersion != null ? (
+              <>
+                {' '}
+                <Lozenge appearance="success">schema v{schemaVersion}</Lozenge>
+              </>
+            ) : null}
+          </Text>
         </SectionMessage>
       ) : null}
 
       <Form onSubmit={handleSave}>
         <FormHeader title="Cài đặt Cá nhân">
           <Text>
-            Tùy chọn áp dụng cho toàn bộ Jira của bạn (KVS key: user-settings:accountId).
+            Schema migration: v1 chỉ có theme/showAvatar; v2 thêm locale,
+            notifications, version. Key KVS: user-prefs:accountId.
           </Text>
         </FormHeader>
 
         <FormSection>
           <Stack space="space.150">
-            <Label labelFor={languageFieldId}>Ngôn ngữ ưa thích</Label>
+            <Label labelFor={themeFieldId}>Giao diện (theme)</Label>
             <Select
-              inputId={languageFieldId}
-              options={LANGUAGE_OPTIONS}
-              value={selectedLanguage}
+              inputId={themeFieldId}
+              options={THEME_OPTIONS}
+              value={selectedTheme}
               onChange={(option) =>
-                setPreferredLanguage(option?.value ?? DEFAULT_FORM.preferredLanguage)
+                setTheme(option?.value ?? DEFAULT_FORM.theme)
               }
-              placeholder="Chọn ngôn ngữ"
+              placeholder="Chọn theme"
             />
 
             <Checkbox
               id={avatarFieldId}
-              label="Hiển thị avatar"
+              label="Hiển thị avatar (showAvatar)"
               isChecked={showAvatar}
               onChange={(event) => {
                 const checked =
@@ -194,12 +239,28 @@ const App = () => {
               }}
             />
 
-            <Label labelFor={itemsFieldId}>Số items / trang</Label>
-            <Textfield
-              id={itemsFieldId}
-              type="number"
-              value={itemsPerPage}
-              onChange={(value) => setItemsPerPage(parseTextfieldValue(value))}
+            <Label labelFor={localeFieldId}>Ngôn ngữ (locale)</Label>
+            <Select
+              inputId={localeFieldId}
+              options={LOCALE_OPTIONS}
+              value={selectedLocale}
+              onChange={(option) =>
+                setLocale(option?.value ?? DEFAULT_FORM.locale)
+              }
+              placeholder="Chọn locale"
+            />
+
+            <Checkbox
+              id={notificationsFieldId}
+              label="Bật thông báo (notifications)"
+              isChecked={notifications}
+              onChange={(event) => {
+                const checked =
+                  typeof event === 'boolean'
+                    ? event
+                    : event?.target?.checked ?? false;
+                setNotifications(checked);
+              }}
             />
           </Stack>
         </FormSection>
@@ -210,16 +271,23 @@ const App = () => {
               appearance="primary"
               type="submit"
               isLoading={saving}
-              isDisabled={resetting}
+              isDisabled={resetting || seeding}
             >
-              Lưu
+              Lưu (v2)
             </LoadingButton>
+            <Button
+              appearance="default"
+              onClick={handleSeedV1}
+              isDisabled={saving || resetting || seeding}
+            >
+              {seeding ? 'Đang seed v1…' : 'Seed v1 test data'}
+            </Button>
             <Button
               appearance="subtle"
               onClick={handleReset}
-              isDisabled={saving || resetting}
+              isDisabled={saving || resetting || seeding}
             >
-              {resetting ? 'Đang reset…' : 'Reset về mặc định'}
+              {resetting ? 'Đang reset…' : 'Xóa storage'}
             </Button>
           </ButtonGroup>
         </FormFooter>
