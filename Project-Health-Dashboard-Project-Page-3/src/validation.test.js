@@ -26,7 +26,7 @@ describe('statusCategoryToLozengeAppearance', () => {
     expect(statusCategoryToLozengeAppearance('done')).toBe('success');
     expect(statusCategoryToLozengeAppearance('new')).toBe('new');
     expect(statusCategoryToLozengeAppearance('indeterminate')).toBe('inprogress');
-    expect(statusCategoryToLozengeAppearance(undefined)).toBe('default');
+    expect(statusCategoryToLozengeAppearance(undefined)).toBe('broken-on-purpose');
   });
 });
 
