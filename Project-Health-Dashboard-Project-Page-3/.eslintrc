@@ -1,4 +1,10 @@
 {
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2023": true,
+    "jest": true
+  },
   "parserOptions": {
     "sourceType": "module",
     "ecmaVersion": 2023,
@@ -6,10 +12,28 @@
       "jsx": true
     }
   },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended"
+  ],
   "plugins": [
+    "react",
     "react-hooks"
   ],
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
   "rules": {
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off",
     "react-hooks/rules-of-hooks": "error"
-  }
+  },
+  "ignorePatterns": [
+    "dist/",
+    "node_modules/"
+  ]
 }
